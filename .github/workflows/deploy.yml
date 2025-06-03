@@ -1,0 +1,65 @@
+name: Deploy Node + SpringBoot to AWS EC2
+
+on:
+  push:
+    branches: [Pratica03]
+
+jobs:
+
+  deploy-backend:
+    name: Deploy Backend + Postgres
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout backend repo
+      uses: actions/checkout@v3
+
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.8.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Build backend JAR
+      run: |
+        cd simulador_emprestimo_back
+        mvn clean package -DskipTests
+
+    - name: Copy backend files to EC2
+      run: |
+        scp -r -o StrictHostKeyChecking=no simulador_emprestimo_back ${{ secrets.EC2_USER }}@${{ secrets.AWS_BACKEND_HOST }}:/home/${{ secrets.EC2_USER }}/app-backend
+
+    - name: Start backend and Postgres on EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.AWS_BACKEND_HOST }} << 'EOF'
+          sudo apt update
+          cd /home/${{ secrets.EC2_USER }}/app-backend
+          docker compose down || true
+          docker compose up -d --build
+        EOF
+
+  deploy-frontend:
+    name: Deploy Frontend Node.js
+    runs-on: ubuntu-latest
+    needs: deploy-backend
+
+    steps:
+    - name: Checkout frontend repo
+      uses: actions/checkout@v3
+
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.8.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Copy frontend files to EC2
+      run: |
+        scp -r -o StrictHostKeyChecking=no simulador_emprestimo_front ${{ secrets.EC2_USER }}@${{ secrets.AWS_FRONTEND_HOST }}:/home/${{ secrets.EC2_USER }}/app-frontend
+
+    - name: Start frontend on EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.AWS_FRONTEND_HOST }} << 'EOF'
+          sudo apt update
+          cd /home/${{ secrets.EC2_USER }}/app-frontend
+          docker compose down || true
+          docker compose up -d --build
+        EOF

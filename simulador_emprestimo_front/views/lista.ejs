@@ -1,0 +1,27 @@
+
+<!DOCTYPE html>
+<html>
+<head><title>Histórico de Simulações</title></head>
+<body>
+  <h1>Simulações Realizadas</h1>
+  <a href="/">Nova Simulação</a>
+  <table border="1">
+    <tr>
+      <th>Valor</th>
+      <th>Meses</th>
+      <th>Taxa</th>
+      <th>Parcela</th>
+      <th>Total</th>
+    </tr>
+    <% simulacoes.forEach(s => { %>
+      <tr>
+        <td>R$ <%= s.valor.toFixed(2) %></td>
+        <td><%= s.meses %></td>
+        <td><%= s.taxa %> %</td>
+        <td>R$ <%= s.parcela.toFixed(2) %></td>
+        <td>R$ <%= s.total.toFixed(2) %></td>
+      </tr>
+    <% }) %>
+  </table>
+</body>
+</html>

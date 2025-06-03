@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+    container_name: simulador-frontend
+    environment:
+      BACKEND_URL: http://52.6.129.244:8080
+    ports:
+      - "3000:3000"
+

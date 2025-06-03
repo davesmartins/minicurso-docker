@@ -25,7 +25,7 @@ app.post('/simular', async (req, res) => {
   }
 });
 
-app.listen(3000, () => {
+app.listen(8000, () => {
   console.log("Frontend rodando na porta 3000");
 });
 

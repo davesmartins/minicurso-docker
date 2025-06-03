@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout backend repo
+    - name: Checkout código
       uses: actions/checkout@v3
-      
-    - name: Checar conteúdo do secret (parcial)
+
+    - name: Verificar se SSH_PRIVATE_KEY está disponível
       run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | head -n 2
 
     - name: Set up SSH
@@ -26,16 +26,18 @@ jobs:
       run: |
         cd simulador_emprestimo_back
         mvn clean package -DskipTests
+        cd ..
 
-    - name: Copy backend files to EC2
+    - name: Apagar e copiar arquivos do backend para EC2
       run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.AWS_BACKEND_HOST }} "rm -rf ~/app-backend"
         scp -r -o StrictHostKeyChecking=no simulador_emprestimo_back ${{ secrets.EC2_USER }}@${{ secrets.AWS_BACKEND_HOST }}:/home/${{ secrets.EC2_USER }}/app-backend
 
-    - name: Start backend and Postgres on EC2
+    - name: Subir backend + Postgres na EC2
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.AWS_BACKEND_HOST }} << 'EOF'
           sudo apt update
-          cd /home/${{ secrets.EC2_USER }}/app-backend
+          cd ~/app-backend
           docker compose down || true
           docker compose up -d --build
         EOF
@@ -46,7 +48,7 @@ jobs:
     needs: deploy-backend
 
     steps:
-    - name: Checkout frontend repo
+    - name: Checkout código
       uses: actions/checkout@v3
 
     - name: Set up SSH
@@ -54,15 +56,16 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    - name: Copy frontend files to EC2
+    - name: Apagar e copiar frontend para EC2
       run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.AWS_FRONTEND_HOST }} "rm -rf ~/app-frontend"
         scp -r -o StrictHostKeyChecking=no simulador_emprestimo_front ${{ secrets.EC2_USER }}@${{ secrets.AWS_FRONTEND_HOST }}:/home/${{ secrets.EC2_USER }}/app-frontend
 
-    - name: Start frontend on EC2
+    - name: Subir frontend na EC2
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.AWS_FRONTEND_HOST }} << 'EOF'
           sudo apt update
-          cd /home/${{ secrets.EC2_USER }}/app-frontend
+          cd ~/app-frontend
           docker compose down || true
           docker compose up -d --build
         EOF

@@ -13,6 +13,9 @@ jobs:
     steps:
     - name: Checkout backend repo
       uses: actions/checkout@v3
+      
+    - name: Checar conteúdo do secret (parcial)
+      run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | head -n 2
 
     - name: Set up SSH
       uses: webfactory/ssh-agent@v0.8.0

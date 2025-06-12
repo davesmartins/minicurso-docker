@@ -5,6 +5,7 @@ services:
     build:
       context: ./simulador_emprestimo_back
     container_name: simulador-backend
+    restart: always
     depends_on:
       - db
     environment:
@@ -21,6 +22,7 @@ services:
     build:
       context: ./simulador_emprestimo_front
     container_name: simulador-frontend
+    restart: always
     depends_on:
       - backend
     environment:
@@ -33,6 +35,7 @@ services:
   db:
     image: postgres:15
     container_name: simulador-db
+    restart: always
     environment:
       POSTGRES_DB: simulador
       POSTGRES_USER: postgres

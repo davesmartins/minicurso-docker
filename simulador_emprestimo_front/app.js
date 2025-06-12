@@ -35,6 +35,6 @@ app.get('/simulacoes', async (req, res) => {
     const response = await axios.get(`${BACKEND_URL}/api/historico`);
     res.render('lista', { simulacoes: response.data });
   } catch (error) {
-    res.send("Erro ao buscar histórico de simulações.");
+    res.send("Erro ao buscar histórico de simulações!");
   }
 });
